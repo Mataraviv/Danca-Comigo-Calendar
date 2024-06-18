@@ -11,6 +11,9 @@ google-api-python-client = "^2.133.0"
 google-auth-httplib2 = "^0.2.0"
 google-auth-oauthlib = "^1.2.0"
 pandas = "^2.2.2"
+google-auth = "^2.30.0"
+datetime = "^5.5"
+streamlit = "^1.35.0"
 
 
 [build-system]
