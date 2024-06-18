@@ -1,5 +1,5 @@
 print('start')
-from datetime import date, datetime
+from datetime import date, datetime, time
 import pytz
 import streamlit as st
 from google.oauth2 import service_account
@@ -22,12 +22,11 @@ service = build('calendar', 'v3', credentials=credentials)
 calendar_id = 'dancemati@gmail.com'  # or use your specific calendar ID
 
 ####################################################################################################
-# Fetch the next 10 events from the calendar
-def fetch_events():
-    # Define the current time in UTC timezone
-    now = datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
-    # Fetch events from Google Calendar
+def fetch_events():
+    now = datetime.utcnow().isoformat() + 'Z'
+
+
     events_result = service.events().list(
         calendarId=calendar_id,
         maxResults=10,
@@ -37,7 +36,6 @@ def fetch_events():
 
     return events_result.get('items', [])
 
-# Print fetched events
 def print_events(events):
     if not events:
         print('No upcoming events found.')
@@ -67,81 +65,66 @@ def print_events(events):
         summary = event['summary']
         print(f"Event {summary}: Start time UTC: {start_utc}, Start time local: {start_local}.\n End time UTC: {end_utc}, End time local: {end_local}.\n duration: {length}")
 
+events = fetch_events()
+print_events(events)
 
 ######################################################################################################
 today_date = date.today()
 print(today_date)
 
 
-# Function to check room availability
-
-from googleapiclient.errors import HttpError
-
 def check_availability(calendar_id, start_time, end_time):
-    try:
-        # Ensure 'Z' is appended to indicate UTC timezone
-        events_result = service.events().list(
-            calendarId=calendar_id,
-            timeMin=start_time + 'Z',
-            timeMax=end_time + 'Z',
-            singleEvents=True,
-            orderBy='startTime'
-        ).execute()
-        events = events_result.get('items', [])
+    events_result = service.events().list(
+        calendarId=calendar_id,
+        timeMin=start_time + 'Z',
+        timeMax=end_time + 'Z',
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    events = events_result.get('items', [])
 
-        return len(events) == 0
-    except HttpError as e:
-        print(f'HttpError occurred: {e.content}')
-        raise  # Raise the error to propagate it further
-
-if __name__ == '__main__':
-    calendar_id = 'dancemati@gmail.com'  # Specify your calendar ID here
-
-    start_time_local = '2024-06-19T09:30:00'
-    local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
-    iso_datetime_start = local_time_s.astimezone(pytz.utc)
-    str_datetime_start = iso_datetime_start.strftime('%Y-%m-%dT%H:%M:%S')
-
-    end_time_local = '2024-06-19T09:50:00'
-    local_time_e = datetime.strptime(end_time_local, '%Y-%m-%dT%H:%M:%S')
-    iso_datetime_end = local_time_e.astimezone(pytz.utc)
-    str_datetime_end = iso_datetime_end.strftime('%Y-%m-%dT%H:%M:%S')
+    return len(events) == 0
 
 
-
-    try:
-        # Fetch and print events
-        events = fetch_events()
-        print_events(events)
-
-        available = check_availability(calendar_id, str_datetime_start, str_datetime_end)
-        if available:
-            print('The room is available.')
-            print(f'{iso_datetime_start}')
-            print(f'{str_datetime_start}')
-            print(f'{start_time_local}')
-        else:
-            print('The room is not available.')
-            print(f'{iso_datetime_start}')
-            print(f'{str_datetime_start}')
-            print(f'{start_time_local}')
-    except HttpError as e:
-        print(f'Error occurred: {e}')
+date = input("choose date")
+ttime = input("choose time")
+dt = date+'T'+ttime+':00'
+print(dt)
 
 
+start_time_local = dt  # '2024-06-19T09:30:00'
+local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
+iso_datetime_start = local_time_s.astimezone(pytz.utc)
+str_datetime_start = iso_datetime_start.strftime('%Y-%m-%dT%H:%M:%S')
+
+end_time_local = '2024-06-19T09:50:00'
+local_time_e = datetime.strptime(end_time_local, '%Y-%m-%dT%H:%M:%S')
+iso_datetime_end = local_time_e.astimezone(pytz.utc)
+str_datetime_end = iso_datetime_end.strftime('%Y-%m-%dT%H:%M:%S')
 
 
+available = check_availability(calendar_id, str_datetime_start, str_datetime_end)
+if available:
+    print('The Studio is available.')
+    print(f'{iso_datetime_start}')
+    print(f'{str_datetime_start}')
+    print(f'{start_time_local}')
+else:
+    print('Sorry. The Studio is not available.')
+    print(f'{iso_datetime_start}')
+    print(f'{str_datetime_start}')
+    print(f'{start_time_local}')
 
 
+######################################################################################################
 
-"""
-# Streamlit app
-st.title('Room Availability Checker')
 
-calendar_id = st.text_input('Enter Calendar ID', 'your_calendar_id@group.calendar.google.com')
+st.title('Studio Availability Checker')
+
+calendar_id = st.text_input(calendar_id)
 date = st.date_input('Date', today_date)
-start_time = st.time_input('Start Time', datetime.time(9, 0))
-end_time = st.time_input('End Time', datetime.time(10, 0))
+start_time = st.time_input('Start Time', time(9, 0))
+end_time = st.time_input('End Time', time(10, 0))
 
 if st.button('Check Availability'):
     start_datetime = datetime.combine(date, start_time)
@@ -153,6 +136,6 @@ if st.button('Check Availability'):
         st.success('The room is available.')
     else:
         st.error('The room is not available.')
-        
-        """
 
+
+print('end')
