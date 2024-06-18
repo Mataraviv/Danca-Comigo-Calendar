@@ -45,20 +45,30 @@ def print_events(events):
         print('No upcoming events found.')
     for event in events:
         start_utc = event['start'].get('dateTime', event['start'].get('date'))
+        end_utc = event['end'].get('dateTime', event['end'].get('date'))
 
         # Parse the datetime string to datetime object
         start_datetime = datetime.fromisoformat(start_utc)
+        end_datetime = datetime.fromisoformat(end_utc)
 
         # Convert the datetime to UTC timezone
         start_utc = start_datetime.astimezone(pytz.utc).isoformat()
+        end_utc = end_datetime.astimezone(pytz.utc).isoformat()
 
         # If the datetime has timezone info, convert it to local timezone
         if start_datetime.tzinfo is not None:
             start_local = start_datetime.astimezone().isoformat()
+            end_local = end_datetime.astimezone().isoformat()
+            g = end_datetime - start_datetime
+            length = f'{g.total_seconds() / 3600} hours'
         else:
             start_local = start_datetime.isoformat()
+            end_local = end_datetime.isoformat()
+            length = "all day"
 
-        print(f"Event: Start time UTC: {start_utc}, Start time local: {start_local}")
+        summary = event['summary']
+        print(
+            f"Event {summary}: Start time UTC: {start_utc}, Start time local: {start_local}.\n End time UTC: {end_utc}, End time local: {end_local}.\n duration: {length}")
 
 
 ######################################################################################################
@@ -91,90 +101,35 @@ def check_availability(calendar_id, start_time, end_time):
 if __name__ == '__main__':
     calendar_id = 'dancemati@gmail.com'  # Specify your calendar ID here
 
-    # Adjusted to UTC time by removing timezone offset
-    iso_datetime_start = '2024-06-19T06:30:00'
-    iso_datetime_end = '2024-06-19T09:50:00'
+    start_time_local = '2024-06-19T09:30:00'
+    local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
+    iso_datetime_start = local_time_s.astimezone(pytz.utc)
+    str_datetime_start = iso_datetime_start.strftime('%Y-%m-%dT%H:%M:%S')
+
+    end_time_local = '2024-06-19T09:50:00'
+    local_time_e = datetime.strptime(end_time_local, '%Y-%m-%dT%H:%M:%S')
+    iso_datetime_end = local_time_e.astimezone(pytz.utc)
+    str_datetime_end = iso_datetime_end.strftime('%Y-%m-%dT%H:%M:%S')
 
     try:
         # Fetch and print events
         events = fetch_events()
         print_events(events)
 
-        available = check_availability(calendar_id, iso_datetime_start, iso_datetime_end)
+        available = check_availability(calendar_id, str_datetime_start, str_datetime_end)
         if available:
             print('The room is available.')
             print(f'{iso_datetime_start}')
+            print(f'{str_datetime_start}')
+            print(f'{start_time_local}')
         else:
             print('The room is not available.')
             print(f'{iso_datetime_start}')
+            print(f'{str_datetime_start}')
+            print(f'{start_time_local}')
     except HttpError as e:
         print(f'Error occurred: {e}')
 
-"""
-def check_availability(calendar_id, start_time, end_time):
-    events_result = service.events().list(
-        calendarId=calendar_id,
-        timeMin=start_time + 'Z',  # Assuming start_time and end_time are already strings
-        timeMax=end_time + 'Z',
-        singleEvents=True,
-        orderBy='startTime'
-    ).execute()
-    events = events_result.get('items', [])
-
-    return len(events) == 0
-
-
-iso_datetime_start = '2024-06-19T09:30:00+03:00'  # This is already a string
-iso_datetime_end = '2024-06-19T09:50:00+03:00'    # This is already a string
-available = check_availability(calendar_id, iso_datetime_start, iso_datetime_end)
-
-if available:
-    st.success('The room is available.')
-else:
-    st.error('The room is not available.')
-"""
-
-"""
-def check_availability(calendar_id, start_time, end_time):
-    events_result = service.events().list(
-        calendarId=calendar_id,
-        timeMin=start_time.isoformat() + 'Z',
-        timeMax=end_time.isoformat() + 'Z',
-        singleEvents=True,
-        orderBy='startTime'
-    ).execute()
-    events = events_result.get('items', [])
-
-    return len(events) == 0  # True if no events, room is available
-
-
-#start_datetime = datetime.strptime('2024-06-19T09:30:00+03:00', '%Y-%m-%dT%H:%M:%S').isoformat()
-#end_datetime = datetime.strptime('2024-06-19T09:50:00+03:00', '%Y-%m-%dT%H:%M:%S').isoformat()
-
-#iso_datetime_start = datetime.strptime('2024-06-19T09:30:00+03:00', '%Y-%m-%dT%H:%M:%S%z').isoformat()
-
-#print(iso_datetime_start)  # Output: '2024-06-19T09:30:00+03:00'
-
-#iso_datetime_end = datetime.strptime('2024-06-19T09:50:00+03:00', '%Y-%m-%dT%H:%M:%S%z').isoformat()
-
-#print(iso_datetime_end)  # Output: '2024-06-19T09:30:00+03:00'
-
-# Parse the datetime string to a datetime object
-iso_datetime_start = datetime.fromisoformat('2024-06-19T09:30:00+03:00').isoformat()
-
-print(iso_datetime_start)  # Output: '2024-06-19T09:30:00+03:00'
-iso_datetime_end = datetime.fromisoformat('2024-06-19T09:50:00+03:00').isoformat()
-
-print(iso_datetime_end)  # Output: '2024-06-19T09:30:00+03:00'
-print(type(iso_datetime_start))
-
-available = check_availability(calendar_id, iso_datetime_start, iso_datetime_end)
-
-if available:
-    st.success('The room is available.')
-else:
-    st.error('The room is not available.')
-"""
 """
 # Streamlit app
 st.title('Room Availability Checker')
