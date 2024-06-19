@@ -93,10 +93,10 @@ def check_availability(calendar_id, start_time, end_time):
     return len(events) == 0
 
 
-def book_studio(calendar_id, start_time, end_time, summary, description):
+def book_studio(calendar_id, start_time, end_time, summary, description, user_email):
     event = {
         'summary': summary,
-        'description': description,
+        'description': description + user_email,
         'start': {
             'dateTime': start_time + 'Z',
             'timeZone': 'UTC',
@@ -132,7 +132,7 @@ if available:
     description = 'Event Description'
     event = book_studio(
         calendar_id, str_datetime_start, str_datetime_end,
-        summary, description)
+        summary, description, user_email)
     if event:
         print(f'Your booking request has been sent! from {start_time_local} till {end_time_local}')
         print(f'Booking link: {event["htmlLink"]}')
@@ -145,6 +145,26 @@ else:
 
 ######################################################################################################
 print('streamlit')
+
+# Initialize session state for stage control
+if 'stage' not in st.session_state:
+    st.session_state.stage = 0
+if 'str_start_datetime' not in st.session_state:
+    st.session_state.str_start_datetime = ''
+if 'str_end_datetime' not in st.session_state:
+    st.session_state.str_end_datetime = ''
+if 'date' not in st.session_state:
+    st.session_state.date = ''
+if 'start_time' not in st.session_state:
+    st.session_state.start_time = ''
+if 'end_time' not in st.session_state:
+    st.session_state.end_time = ''
+
+# Function to set stage
+def set_stage(stage):
+    st.session_state.stage = stage
+
+
 logo_path = 'C:/Users/matar.aviv/Desktop/DS17/Danca-Comigo-Calendar/Current Logo.png'
 link = "http://www.danca-comigo.com/"
 cola, colb = st.columns(2)
@@ -156,86 +176,69 @@ with colb:
 
 st.title(':violet[_Studio Availability Checker_]')
 
-date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='visible',format="DD/MM/YYYY")
-col1, col2 = st.columns(2)
-with col1:
-    start_time = st.time_input('Start Time',time(8, 0),step=900,label_visibility='visible')
-with col2:
-    end_time = st.time_input('End Time', time(9, 0),step=900,label_visibility='visible')
+
+if st.session_state.stage == 0:
+    with st.form(key='Check Availability'):
+        st.session_state.date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='visible',format="DD/MM/YYYY").isoformat()
+        col1, col2 = st.columns(2)
+        with col1:
+            start_time_input = st.time_input('Start Time',time(8, 0),step=900,label_visibility='visible')
+            st.session_state.start_time = start_time_input.isoformat()
+        with col2:
+            end_time_input = st.time_input('End Time', time(9, 0),step=900,label_visibility='visible')
+            st.session_state.end_time = end_time_input.isoformat()
 
 
-def valid_end_time_fun(start_time, end_time):
-    if end_time < start_time:
-        st.error('End time must be later than start time.')
-        return False
-    else:
-        st.success('Time range is valid.')
-        #st.write(f'Start Time: {start_time} End Time: {end_time} On {date}')
-        return True
+        def valid_end_time_fun(start_time, end_time):
+            if end_time < start_time:
+                st.error('End time must be later than start time.')
+                return False
+            else:
+                st.success('Time range is valid.')
+                # st.write(f'Start Time: {start_time} End Time: {end_time} On {date}')
+                return True
 
 
-valid_end_time = valid_end_time_fun(start_time, end_time)
+        valid_end_time = valid_end_time_fun(st.session_state.start_time, st.session_state.end_time)
+        submit_button_1 = st.form_submit_button(label='Check Availability')
 
+    if valid_end_time and submit_button_1:
+        start_datetime = datetime.combine(datetime.fromisoformat(st.session_state.date).date(), start_time_input)
+        start_datetime_utc = start_datetime.astimezone(pytz.utc)
+        st.session_state.str_start_datetime = start_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
+        end_datetime = datetime.combine(datetime.fromisoformat(st.session_state.date).date(), end_time_input)
+        end_datetime_utc = end_datetime.astimezone(pytz.utc)
+        st.session_state.str_end_datetime = end_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
 
-if valid_end_time and st.button('Check Availability'):
-    start_datetime = datetime.combine(date, start_time)
-    start_datetime_utc = start_datetime.astimezone(pytz.utc)
-    str_start_datetime = start_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
-    end_datetime = datetime.combine(date, end_time)
-    end_datetime_utc = end_datetime.astimezone(pytz.utc)
-    str_end_datetime = end_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
+        available = check_availability('dancemati@gmail.com', st.session_state.str_start_datetime, st.session_state.str_end_datetime)
 
-    available = check_availability('dancemati@gmail.com', str_start_datetime, str_end_datetime)
+        if available:
+            st.success('The Studio is available.')
+            st.button('Proceed to Booking', on_click=set_stage, args=(1,))
 
-    if available:
-        st.success('The Studio is available.')
+        else:
+            st.error('Sorry. The Studio is not available.')
 
-        #  user_email = st.text_input('Enter your email', value="")
+if st.session_state.stage == 1:
+    st.write(f'Your Booking is from {st.session_state.start_time} till {st.session_state.end_time} on {st.session_state.date}')
+    with st.form(key='booking_form'):
+        user_email = st.text_input('Enter your email', value="")
         summary = st.text_input('Event Summary', 'Booking Request')
-        if summary:
-            st.write("You entered: ", summary)
         description = st.text_area('Event Description', 'Please approve this booking request for the studio.')
-        if description:
-            st.write("You entered: ", description)
-        #  user_email = 'mataraviv42@gmail.com'
+        submit_button_2 = st.form_submit_button(label='Book Studio')
 
-        if st.button('Book the Studio'):
-            print('booking')
-            st.write('booking')
-            event = book_studio(
-                calendar_id, str_start_datetime, str_end_datetime,
-                summary, description)
-            if event:
-                print(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                print(f'Booking link: {event["htmlLink"]}')
-                st.write(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                st.write(f'Booking link: {event["htmlLink"]}')
-                st.balloons()
-            else:
-                st.error('Failed to book the studio. Please check your inputs and try again.')
-
-    else:
-        st.error('Sorry. The Studio is not available.')
-
-        """
-        
-                if st.button('Book the Studio'):
-            print('booking')
-            st.write('booking')
-            event = book_studio(
-                calendar_id, str_start_datetime, str_end_datetime,
-                summary, description)
-            if event:
-                print(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                print(f'Booking link: {event["htmlLink"]}')
-                st.write(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                st.write(f'Booking link: {event["htmlLink"]}')
-                st.balloons()
-            else:
-                st.error('Failed to book the studio. Please check your inputs and try again.')
+    if submit_button_2:
+        event = book_studio(
+            calendar_id, st.session_state.str_start_datetime, st.session_state.str_end_datetime,
+            summary, description, user_email)
+        if event:
+            st.write(f'Your booking request has been sent! from {st.session_state.start_time} till {st.session_state.end_time} on {st.session_state.date}')
+            st.write(f'Booking link: {event["htmlLink"]}')
+            st.balloons()
+        else:
+            st.error('Failed to book the studio. Please check your inputs and try again.')
                 
-                
-                
+'''               
         # Get the current week start and end dates
         def get_week_dates():
             today = date.today()
@@ -278,7 +281,7 @@ if valid_end_time and st.button('Check Availability'):
 
         events = fetch_week_events(calendar_id)
         display_events(events)
-        """
+'''
 
 
 print('end')
