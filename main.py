@@ -27,7 +27,7 @@ def fetch_events_now():
     now = datetime.utcnow().isoformat() + 'Z'
     events_result = service.events().list(
         calendarId=calendar_id,
-        maxResults=10,
+        maxResults=2,
         singleEvents=True,
         timeMin=now,
         orderBy='startTime').execute()
@@ -84,40 +84,28 @@ def check_availability(calendar_id, start_time, end_time):
 
     return len(events) == 0
 
-
-start_time_local = '2024-06-19T09:30:00'
-local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
-iso_datetime_start = local_time_s.astimezone(pytz.utc)
-str_datetime_start = iso_datetime_start.strftime('%Y-%m-%dT%H:%M:%S')
-
-end_time_local = '2024-06-19T09:50:00'
-local_time_e = datetime.strptime(end_time_local, '%Y-%m-%dT%H:%M:%S')
-iso_datetime_end = local_time_e.astimezone(pytz.utc)
-str_datetime_end = iso_datetime_end.strftime('%Y-%m-%dT%H:%M:%S')
-
-
-available = check_availability(calendar_id, str_datetime_start, str_datetime_end)
-if available:
-    print('The Studio is available.')
-    print(f'{iso_datetime_start}')
-    print(f'{str_datetime_start}')
-    print(f'{start_time_local}')
-else:
-    print('Sorry. The Studio is not available.')
-    print(f'{iso_datetime_start}')
-    print(f'{str_datetime_start}')
-    print(f'{start_time_local}')
-
-
 ######################################################################################################
 print('streamlit')
 
 st.title('Studio Availability Checker')
 
-date = st.date_input('Date', today_date)
-start_time = st.time_input('Start Time', time(9, 0))
-end_time = st.time_input('End Time', time(10, 0))
+date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='collapsed')
+start_time = st.time_input('Start Time', value=time(9, 0),step=1800,format="HH:mm")
+end_time = st.time_input('End Time', time(10, 0),step=1800,format="HH:mm")
 
+
+def valid_end_time_fun(start_time, end_time):
+    if end_time < start_time:
+        st.error('End time must be later than start time.')
+        return False
+    else:
+        st.success('Time range is valid.')
+        st.write(f'Start Time: {start_time}')
+        st.write(f'End Time: {end_time}')
+        return True
+
+
+valid_end_time = valid_end_time_fun(start_time, end_time)
 
 def fetch_events(calendar_id,start_time,end_time):
     events_result = service.events().list(
@@ -126,11 +114,10 @@ def fetch_events(calendar_id,start_time,end_time):
         timeMax=end_time +'Z',
         singleEvents=True,
         orderBy='startTime').execute()
-
     return events_result.get('items', [])
 
 
-if st.button('Check Availability'):
+if valid_end_time and st.button('Check Availability'):
     start_datetime = datetime.combine(date, start_time)
     start_datetime_utc = start_datetime.astimezone(pytz.utc)
     str_start_datetime = start_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
@@ -148,7 +135,7 @@ if st.button('Check Availability'):
     if available:
         st.success('The Studio is available.')
     else:
-        st.error('The Studio is not available.')
+        st.error('Sorry. The Studio is not available.')
 
 
 print('end')

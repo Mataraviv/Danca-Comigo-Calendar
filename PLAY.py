@@ -22,14 +22,11 @@ service = build('calendar', 'v3', credentials=credentials)
 calendar_id = 'dancemati@gmail.com'  # or use your specific calendar ID
 
 ####################################################################################################
-
-def fetch_events():
+def fetch_events_now():
     now = datetime.utcnow().isoformat() + 'Z'
-
-
     events_result = service.events().list(
         calendarId=calendar_id,
-        maxResults=10,
+        maxResults=2,
         singleEvents=True,
         timeMin=now,
         orderBy='startTime').execute()
@@ -40,16 +37,28 @@ def print_events(events):
     if not events:
         print('No upcoming events found.')
     for event in events:
-        start_utc = event['start'].get('dateTime', event['start'].get('date'))
-        end_utc = event['end'].get('dateTime', event['end'].get('date'))
+        start_loc = event['start'].get('dateTime', event['start'].get('date'))
+        end_loc = event['end'].get('dateTime', event['end'].get('date'))
+        print(start_loc, type(start_loc),'start_loc')
+        #print(end_loc, type(end_loc),'end_loc')
 
         # Parse the datetime string to datetime object
-        start_datetime = datetime.fromisoformat(start_utc)
-        end_datetime = datetime.fromisoformat(end_utc)
+        start_datetime = datetime.fromisoformat(start_loc)
+        end_datetime = datetime.fromisoformat(end_loc)
+        print(start_datetime, type(start_datetime),'start_datetime')
+        #print(end_datetime, type(end_datetime),'end_datetime')
 
         # Convert the datetime to UTC timezone
         start_utc = start_datetime.astimezone(pytz.utc).isoformat()
         end_utc = end_datetime.astimezone(pytz.utc).isoformat()
+        print(start_utc, type(start_utc),'start_utc')
+        #print(end_utc, type(end_utc),'end_utc')
+
+        start_local_if = start_datetime.astimezone().isoformat()
+        start_local_else = start_datetime.isoformat()
+        print(start_local_if, type (start_local_if),'start_local_if')
+        print(start_local_else, type (start_local_else),'start_local_else')
+        #end_local = end_datetime.astimezone().isoformat()
 
         # If the datetime has timezone info, convert it to local timezone
         if start_datetime.tzinfo is not None:
@@ -65,8 +74,9 @@ def print_events(events):
         summary = event['summary']
         print(f"Event {summary}: Start time UTC: {start_utc}, Start time local: {start_local}.\n End time UTC: {end_utc}, End time local: {end_local}.\n duration: {length}")
 
-events = fetch_events()
-print_events(events)
+
+events_now = fetch_events_now()
+print_events(events_now)
 
 ######################################################################################################
 today_date = date.today()
@@ -76,8 +86,8 @@ print(today_date)
 def check_availability(calendar_id, start_time, end_time):
     events_result = service.events().list(
         calendarId=calendar_id,
-        timeMin=start_time + 'Z',
-        timeMax=end_time + 'Z',
+        timeMin=start_time +'Z',
+        timeMax=end_time +'Z',
         singleEvents=True,
         orderBy='startTime'
     ).execute()
@@ -85,14 +95,8 @@ def check_availability(calendar_id, start_time, end_time):
 
     return len(events) == 0
 
-"""
-date = input("choose date")
-ttime = input("choose time")
-dt = date+'T'+ttime+':00'
-print(dt)
-"""
 
-start_time_local = '2024-06-19T09:30:00'  # dt
+start_time_local = '2024-06-19T09:30:00'
 local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
 iso_datetime_start = local_time_s.astimezone(pytz.utc)
 str_datetime_start = iso_datetime_start.strftime('%Y-%m-%dT%H:%M:%S')
@@ -115,27 +119,58 @@ else:
     print(f'{str_datetime_start}')
     print(f'{start_time_local}')
 
-
 ######################################################################################################
-
+print('streamlit')
 
 st.title('Studio Availability Checker')
 
-calendar_id = st.text_input(calendar_id)
 date = st.date_input('Date', today_date)
 start_time = st.time_input('Start Time', time(9, 0))
 end_time = st.time_input('End Time', time(10, 0))
 
-if st.button('Check Availability'):
-    start_datetime = datetime.combine(date, start_time)
-    end_datetime = datetime.combine(date, end_time)
 
-    available = check_availability(calendar_id, start_datetime, end_datetime)
+def valid_end_time_fun(start_time,end_time):
+    if end_time < start_time:
+        st.error('End time must be later than start time.')
+        return False
+    else:
+        st.success('Time range is valid.')
+        st.write(f'Start Time: {start_time}')
+        st.write(f'End Time: {end_time}')
+        return True
+
+
+valid_end_time = valid_end_time_fun(start_time,end_time)
+
+
+def fetch_events(calendar_id, start_time, end_time):
+    events_result = service.events().list(
+        calendarId=calendar_id,
+        timeMin=start_time + 'Z',
+        timeMax=end_time + 'Z',
+        singleEvents=True,
+        orderBy='startTime').execute()
+    return events_result.get('items', [])
+
+
+if valid_end_time and st.button('Check Availability'):
+    start_datetime = datetime.combine(date, start_time)
+    start_datetime_utc = start_datetime.astimezone(pytz.utc)
+    str_start_datetime = start_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
+    print(str_start_datetime)
+    end_datetime = datetime.combine(date, end_time)
+    end_datetime_utc = end_datetime.astimezone(pytz.utc)
+    str_end_datetime = end_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
+    print(str_end_datetime)
+
+    events = fetch_events('dancemati@gmail.com', str_start_datetime, str_end_datetime)
+    print_events(events)
+
+    available = check_availability('dancemati@gmail.com', str_start_datetime, str_end_datetime)
 
     if available:
-        st.success('The room is available.')
+        st.success('The Studio is available.')
     else:
-        st.error('The room is not available.')
-
+        st.error('Sorry. The Studio is not available.')
 
 print('end')
