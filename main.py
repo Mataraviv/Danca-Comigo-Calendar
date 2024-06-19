@@ -96,7 +96,7 @@ def check_availability(calendar_id, start_time, end_time):
 def book_studio(calendar_id, start_time, end_time, summary, description, user_email):
     event = {
         'summary': summary,
-        'description': description + user_email,
+        'description': f'My email {user_email}\n\n {description}' ,
         'start': {
             'dateTime': start_time + 'Z',
             'timeZone': 'UTC',
@@ -213,7 +213,9 @@ if st.session_state.stage == 0:
         available = check_availability('dancemati@gmail.com', st.session_state.str_start_datetime, st.session_state.str_end_datetime)
 
         if available:
-            st.success('The Studio is available.')
+            st.success('The Studio is available. :dancer:')
+            with st.expander(":heavy_dollar_sign: See Pricing :heavy_dollar_sign:"):
+                st.image('C:/Users/matar.aviv/Desktop/DS17/Danca-Comigo-Calendar/pricing.png')
             st.button('Proceed to Booking', on_click=set_stage, args=(1,))
 
         else:
