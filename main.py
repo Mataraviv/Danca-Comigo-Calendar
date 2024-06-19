@@ -90,8 +90,8 @@ print('streamlit')
 st.title('Studio Availability Checker')
 
 date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='collapsed')
-start_time = st.time_input('Start Time', value=time(9, 0),step=1800,format="HH:mm")
-end_time = st.time_input('End Time', time(10, 0),step=1800,format="HH:mm")
+start_time = st.time_input('Start Time',step=1800)
+end_time = st.time_input('End Time', time(10, 0),step=1800)
 
 
 def valid_end_time_fun(start_time, end_time):
