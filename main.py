@@ -19,7 +19,8 @@ credentials = service_account.Credentials.from_service_account_file(
 service = build('calendar', 'v3', credentials=credentials)
 
 # Specify the calendar ID (use 'primary' for the primary calendar of the account)
-calendar_id = 'dancemati@gmail.com'  # or use your specific calendar ID
+calendar_id = 'dancemati@gmail.com'
+owner_email = calendar_id
 
 ####################################################################################################
 
@@ -31,7 +32,6 @@ def fetch_events_now():
         singleEvents=True,
         timeMin=now,
         orderBy='startTime').execute()
-
     return events_result.get('items', [])
 
 def print_events(events):
@@ -75,13 +75,12 @@ print(today_date)
 def check_availability(calendar_id, start_time, end_time):
     events_result = service.events().list(
         calendarId=calendar_id,
-        timeMin=start_time +'Z',
-        timeMax=end_time +'Z',
+        timeMin=start_time + 'Z',
+        timeMax=end_time + 'Z',
         singleEvents=True,
         orderBy='startTime'
     ).execute()
     events = events_result.get('items', [])
-
     return len(events) == 0
 
 ######################################################################################################
@@ -144,11 +143,47 @@ if valid_end_time and st.button('Check Availability'):
 
     if available:
         st.success('The Studio is available.')
-        st.balloons()
+
+        user_email = st.text_input('Enter your email', value="")
+        summary = st.text_input('Event Summary', 'Booking Request')
+        description = st.text_area('Event Description', 'Please approve this booking request for the studio.')
+
+
+        def book_studio(calendar_id, start_time, end_time, summary, description, user_email, owner_email):
+            event = {
+                'summary': summary,
+                'description': description,
+                'start': {
+                    'dateTime': start_time + 'Z',
+                    'timeZone': 'UTC',
+                },
+                'end': {
+                    'dateTime': end_time + 'Z',
+                    'timeZone': 'UTC',
+                },
+                'attendees': [
+                    {'email': user_email},
+                    {'email': owner_email, 'responseStatus': 'needsAction'}  # Owner invited for approval
+                ],
+                'guestsCanModify': False,
+                'status': 'tentative'  # Tentative until the owner approves
+            }
+
+            event_result = service.events().insert(calendarId=calendar_id, body=event).execute()
+            return event_result
+
+        if st.button('book_studio'):
+            event = book_studio(
+                calendar_id, str_start_datetime, str_end_datetime,
+                summary, description, user_email, owner_email)
+            st.success('The Studio is available and your booking request has been sent!')
+            st.write(f'Booking link: {event["htmlLink"]}')
+            st.balloons()
+
     else:
         st.error('Sorry. The Studio is not available.')
 
-
+        """
         # Get the current week start and end dates
         def get_week_dates():
             today = date.today()
@@ -191,6 +226,7 @@ if valid_end_time and st.button('Check Availability'):
 
         events = fetch_week_events(calendar_id)
         display_events(events)
+        """
 
 
 print('end')
