@@ -22,6 +22,8 @@ service = build('calendar', 'v3', credentials=credentials)
 calendar_id = 'dancemati@gmail.com'
 
 today_date = date.today()
+
+
 ####################################################################################################
 
 def fetch_events_now():
@@ -33,6 +35,7 @@ def fetch_events_now():
         timeMin=now,
         orderBy='startTime').execute()
     return events_result.get('items', [])
+
 
 def print_events(events):
     if not events:
@@ -54,28 +57,30 @@ def print_events(events):
         if start_datetime.tzinfo is not None:
             start_local = start_datetime.astimezone().isoformat()
             end_local = end_datetime.astimezone().isoformat()
-            g = end_datetime-start_datetime
-            length = f'{g.total_seconds()/3600} hours'
+            g = end_datetime - start_datetime
+            length = f'{g.total_seconds() / 3600} hours'
         else:
             start_local = start_datetime.isoformat()
             end_local = end_datetime.isoformat()
             length = "all day"
 
         summary = event['summary']
-        print(f"{status}Event {summary}: Start time UTC: {start_utc}, Start time local: {start_local}.\n End time UTC: {end_utc}, End time local: {end_local}.\n duration: {length}")
+        print(
+            f"{status}Event {summary}: Start time UTC: {start_utc}, Start time local: {start_local}.\n End time UTC: {end_utc}, End time local: {end_local}.\n duration: {length}")
 
 
 events_now = fetch_events_now()
-#  print_events(events_now)
+print_events(events_now)
+
 
 ######################################################################################################
 
 
-def fetch_events(calendar_id,start_time,end_time):
+def fetch_events(calendar_id, start_time, end_time):
     events_result = service.events().list(
         calendarId=calendar_id,
-        timeMin=start_time +'Z',
-        timeMax=end_time +'Z',
+        timeMin=start_time + 'Z',
+        timeMax=end_time + 'Z',
         singleEvents=True,
         orderBy='startTime').execute()
     return events_result.get('items', [])
@@ -111,9 +116,10 @@ def book_studio(calendar_id, start_time, end_time, summary, description):
     event_result = service.events().insert(calendarId=calendar_id, body=event).execute()
     return event_result
 
+
 ######################################################################################################
 
-"""
+
 start_time_local = '2024-06-20T07:00:00'
 local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
 iso_datetime_start = local_time_s.astimezone(pytz.utc)
@@ -141,8 +147,8 @@ if available:
 
 else:
     print('Sorry. The Studio is not available.')
-"""
 
+"""
 ######################################################################################################
 print('streamlit')
 logo_path = 'C:/Users/matar.aviv/Desktop/DS17/Danca-Comigo-Calendar/Current Logo.png'
@@ -181,9 +187,14 @@ if valid_end_time and st.button('Check Availability'):
     start_datetime = datetime.combine(date, start_time)
     start_datetime_utc = start_datetime.astimezone(pytz.utc)
     str_start_datetime = start_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
+    print(str_start_datetime)
     end_datetime = datetime.combine(date, end_time)
     end_datetime_utc = end_datetime.astimezone(pytz.utc)
     str_end_datetime = end_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
+    print(str_end_datetime)
+
+    #  events = fetch_events('dancemati@gmail.com', str_start_datetime, str_end_datetime)
+    #  print_events(events)
 
     available = check_availability('dancemati@gmail.com', str_start_datetime, str_end_datetime)
 
@@ -192,23 +203,16 @@ if valid_end_time and st.button('Check Availability'):
 
         #  user_email = st.text_input('Enter your email', value="")
         summary = st.text_input('Event Summary', 'Booking Request')
-        if summary:
-            st.write("You entered: ", summary)
         description = st.text_area('Event Description', 'Please approve this booking request for the studio.')
-        if description:
-            st.write("You entered: ", description)
-        #  user_email = 'mataraviv42@gmail.com'
+        user_email = 'mataraviv42@gmail.com'
 
         if st.button('Book the Studio'):
-            print('booking')
             st.write('booking')
             event = book_studio(
                 calendar_id, str_start_datetime, str_end_datetime,
-                summary, description)
+                summary, description, user_email, owner_email)
             if event:
-                print(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                print(f'Booking link: {event["htmlLink"]}')
-                st.write(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
+                st.success('The Studio is available and your booking request has been sent!')
                 st.write(f'Booking link: {event["htmlLink"]}')
                 st.balloons()
             else:
@@ -217,25 +221,7 @@ if valid_end_time and st.button('Check Availability'):
     else:
         st.error('Sorry. The Studio is not available.')
 
-        """
-        
-                if st.button('Book the Studio'):
-            print('booking')
-            st.write('booking')
-            event = book_studio(
-                calendar_id, str_start_datetime, str_end_datetime,
-                summary, description)
-            if event:
-                print(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                print(f'Booking link: {event["htmlLink"]}')
-                st.write(f'Your booking request has been sent! from {start_time} till {end_time} on {date}')
-                st.write(f'Booking link: {event["htmlLink"]}')
-                st.balloons()
-            else:
-                st.error('Failed to book the studio. Please check your inputs and try again.')
-                
-                
-                
+
         # Get the current week start and end dates
         def get_week_dates():
             today = date.today()
@@ -278,8 +264,9 @@ if valid_end_time and st.button('Check Availability'):
 
         events = fetch_week_events(calendar_id)
         display_events(events)
-        """
+
 
 
 print('end')
-        
+
+"""
