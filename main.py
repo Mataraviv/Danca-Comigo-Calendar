@@ -91,7 +91,7 @@ st.title('Studio Availability Checker')
 
 date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='visible')
 start_time = st.time_input('Start Time',time(8, 0),step=900,label_visibility='visible')
-end_time = st.time_input('End Time', time(9, 0),step=900,label_visibility='collapsed')
+end_time = st.time_input('End Time', time(9, 0),step=900,label_visibility='hidden')
 
 
 def valid_end_time_fun(start_time, end_time):
