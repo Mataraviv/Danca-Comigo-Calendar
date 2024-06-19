@@ -89,9 +89,12 @@ print('streamlit')
 
 st.title('Studio Availability Checker')
 
-date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='visible')
-start_time = st.time_input('Start Time',time(8, 0),step=900,label_visibility='visible')
-end_time = st.time_input('End Time', time(9, 0),step=900,label_visibility='hidden')
+date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='visible',format="DD/MM/YYYY")
+col1, col2 = st.columns(2)
+with col1:
+    start_time = st.time_input('Start Time',time(8, 0),step=900,label_visibility='visible')
+with col2:
+    end_time = st.time_input('End Time', time(9, 0),step=900,label_visibility='visible')
 
 
 def valid_end_time_fun(start_time, end_time):
@@ -100,8 +103,7 @@ def valid_end_time_fun(start_time, end_time):
         return False
     else:
         st.success('Time range is valid.')
-        st.write(f'Start Time: {start_time}')
-        st.write(f'End Time: {end_time}')
+        #st.write(f'Start Time: {start_time} End Time: {end_time} On {date}')
         return True
 
 
@@ -134,6 +136,7 @@ if valid_end_time and st.button('Check Availability'):
 
     if available:
         st.success('The Studio is available.')
+        st.balloons()
     else:
         st.error('Sorry. The Studio is not available.')
 
