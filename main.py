@@ -1,5 +1,5 @@
 print('start')
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 import pytz
 import streamlit as st
 from google.oauth2 import service_account
@@ -86,14 +86,13 @@ def check_availability(calendar_id, start_time, end_time):
 
 ######################################################################################################
 print('streamlit')
-
-
 logo_path = 'C:/Users/matar.aviv/Desktop/DS17/Danca-Comigo-Calendar/Current Logo.png'
 link = "http://www.danca-comigo.com/"
-#  st.logo(logo_path,link="http://www.danca-comigo.com/")#, use_column_width=True)
-#  st.image(logo_path, use_column_width=True)
-st.markdown(f'<a href="{link}" target="_blank"><img src="{logo_path}" width="300"></a>', unsafe_allow_html=True)
-
+cola, colb = st.columns(2)
+with cola:
+    st.image(logo_path, use_column_width=True)
+with colb:
+    st.logo(logo_path,link="http://www.danca-comigo.com/")
 
 
 st.title(':violet[_Studio Availability Checker_]')
@@ -148,6 +147,50 @@ if valid_end_time and st.button('Check Availability'):
         st.balloons()
     else:
         st.error('Sorry. The Studio is not available.')
+
+
+        # Get the current week start and end dates
+        def get_week_dates():
+            today = date.today()
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            return start_of_week, end_of_week
+
+        # Fetch events for the current week
+        def fetch_week_events(calendar_id):
+            start_of_week, end_of_week = get_week_dates()
+            time_min = datetime.combine(start_of_week, datetime.min.time()).isoformat() + 'Z'
+            time_max = datetime.combine(end_of_week, datetime.max.time()).isoformat() + 'Z'
+
+            events_result = service.events().list(
+                calendarId=calendar_id,
+                timeMin=time_min,
+                timeMax=time_max,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            return events_result.get('items', [])
+
+        # Display events in Streamlit
+        def display_events(events):
+            if not events:
+                st.write("No events found for this week.")
+            else:
+                for event in events:
+                    start_time = event['start'].get('dateTime', event['start'].get('date'))
+                    end_time = event['end'].get('dateTime', event['end'].get('date'))
+                    summary = event.get('summary', 'No title')
+                    st.write(f"**{summary}**")
+                    st.write(f"Start: {start_time}")
+                    st.write(f"End: {end_time}")
+                    st.write("---")
+
+
+        # Streamlit app
+        st.title("Studio Calendar for the Current Week")
+
+        events = fetch_week_events(calendar_id)
+        display_events(events)
 
 
 print('end')
