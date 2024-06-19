@@ -1,24 +1,20 @@
 print('start')
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 import pytz
 import streamlit as st
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# Define the scopes
+
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
-# Path to the service account key file
 SERVICE_ACCOUNT_FILE = 'cerdentials.json'
 
-# Create credentials using the service account file
 credentials = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
-# Build the service for the Calendar API
 service = build('calendar', 'v3', credentials=credentials)
 
-# Specify the calendar ID (use 'primary' for the primary calendar of the account)
 calendar_id = 'dancemati@gmail.com'
 
 today_date = date.today()
@@ -42,15 +38,12 @@ def print_events(events):
         start_utc = event['start'].get('dateTime', event['start'].get('date'))
         end_utc = event['end'].get('dateTime', event['end'].get('date'))
 
-        # Parse the datetime string to datetime object
         start_datetime = datetime.fromisoformat(start_utc)
         end_datetime = datetime.fromisoformat(end_utc)
 
-        # Convert the datetime to UTC timezone
         start_utc = start_datetime.astimezone(pytz.utc).isoformat()
         end_utc = end_datetime.astimezone(pytz.utc).isoformat()
 
-        # If the datetime has timezone info, convert it to local timezone
         if start_datetime.tzinfo is not None:
             start_local = start_datetime.astimezone().isoformat()
             end_local = end_datetime.astimezone().isoformat()
@@ -106,47 +99,16 @@ def book_studio(calendar_id, start_time, end_time, summary, description, user_em
             'timeZone': 'UTC',
         },
         'guestsCanModify': False,
-        'status': 'tentative'  # Tentative until the owner approves
+        'status': 'tentative'
     }
     event_result = service.events().insert(calendarId=calendar_id, body=event).execute()
     return event_result
 
-######################################################################################################
-
-"""
-start_time_local = '2024-06-20T07:00:00'
-local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
-iso_datetime_start = local_time_s.astimezone(pytz.utc)
-str_datetime_start = iso_datetime_start.strftime('%Y-%m-%dT%H:%M:%S')
-
-end_time_local = '2024-06-20T08:00:00'
-local_time_e = datetime.strptime(end_time_local, '%Y-%m-%dT%H:%M:%S')
-iso_datetime_end = local_time_e.astimezone(pytz.utc)
-str_datetime_end = iso_datetime_end.strftime('%Y-%m-%dT%H:%M:%S')
-
-available = check_availability(calendar_id, str_datetime_start, str_datetime_end)
-if available:
-    print('The Studio is available.')
-
-    summary = 'Event Summary'
-    description = 'Event Description'
-    event = book_studio(
-        calendar_id, str_datetime_start, str_datetime_end,
-        summary, description, user_email)
-    if event:
-        print(f'Your booking request has been sent! from {start_time_local} till {end_time_local}')
-        print(f'Booking link: {event["htmlLink"]}')
-    else:
-        print('Failed to book the studio. Please check your inputs and try again.')
-
-else:
-    print('Sorry. The Studio is not available.')
-"""
 
 ######################################################################################################
 print('streamlit')
 
-# Initialize session state for stage control
+
 if 'stage' not in st.session_state:
     st.session_state.stage = 0
 if 'str_start_datetime' not in st.session_state:
@@ -160,7 +122,7 @@ if 'start_time' not in st.session_state:
 if 'end_time' not in st.session_state:
     st.session_state.end_time = ''
 
-# Function to set stage
+
 def set_stage(stage):
     st.session_state.stage = stage
 
@@ -190,7 +152,7 @@ if st.session_state.stage == 0:
 
 
         def valid_end_time_fun(start_time, end_time):
-            if end_time < start_time:
+            if end_time <= start_time:
                 st.error('End time must be later than start time.')
                 return False
             else:
@@ -220,13 +182,52 @@ if st.session_state.stage == 0:
 
         else:
             st.error('Sorry. The Studio is not available.')
+            st.title("The upcoming event in the Studio:")
+            def fetch_events_time(start_datetime):
+                events_result = service.events().list(
+                    calendarId=calendar_id,
+                    maxResults=3,
+                    singleEvents=True,
+                    timeMin=start_datetime + 'Z',
+                    orderBy='startTime').execute()
+                return events_result.get('items', [])
+            def display_events(events):
+                if not events:
+                    st.write("No events found for this week.")
+                else:
+                    for event in events:
+                        start_utc = event['start'].get('dateTime', event['start'].get('date'))
+                        end_utc = event['end'].get('dateTime', event['end'].get('date'))
+                        start_datetime = datetime.fromisoformat(start_utc)
+                        end_datetime = datetime.fromisoformat(end_utc)
+                        summary = event.get('summary', 'No title')
+                        if start_datetime.tzinfo is not None:
+                            start_local = start_datetime.astimezone().isoformat()
+                            end_local = end_datetime.astimezone().isoformat()
+                            g = end_datetime - start_datetime
+                            length = g.total_seconds() / 3600
+                            st.write(f"**{summary}**")
+                            st.write(f'Date: {start_local[:10]}')
+                            st.write(f"Start: {start_local[11:16]}")
+                            st.write(f"End: {end_local[11:16]}")
+                            st.write(f"Length: {length} hours")
+                            st.write("---")
+                        else:
+                            length = "all day"
+                            st.write(f"**{summary}**")
+                            st.write(f'Date: {start_local[:10]}')
+                            st.write(f"Length: {length}")
+                            st.write("---")
+            events = fetch_events_time(st.session_state.str_start_datetime)
+            display_events(events)
+
 
 if st.session_state.stage == 1:
     st.write(f'Your Booking is from {st.session_state.start_time} till {st.session_state.end_time} on {st.session_state.date}')
     with st.form(key='booking_form'):
         user_email = st.text_input('Enter your email', value="")
-        summary = st.text_input('Event Summary', 'Booking Request')
-        description = st.text_area('Event Description', 'Please approve this booking request for the studio.')
+        summary = st.text_input('Event Summary', 'Enter your Booking Request')
+        description = st.text_area('Event Description', 'Enter your Event Description')
         submit_button_2 = st.form_submit_button(label='Book Studio')
 
     if submit_button_2:
@@ -240,51 +241,6 @@ if st.session_state.stage == 1:
         else:
             st.error('Failed to book the studio. Please check your inputs and try again.')
                 
-'''               
-        # Get the current week start and end dates
-        def get_week_dates():
-            today = date.today()
-            start_of_week = today - timedelta(days=today.weekday())
-            end_of_week = start_of_week + timedelta(days=6)
-            return start_of_week, end_of_week
-
-        # Fetch events for the current week
-        def fetch_week_events(calendar_id):
-            start_of_week, end_of_week = get_week_dates()
-            time_min = datetime.combine(start_of_week, datetime.min.time()).isoformat() + 'Z'
-            time_max = datetime.combine(end_of_week, datetime.max.time()).isoformat() + 'Z'
-
-            events_result = service.events().list(
-                calendarId=calendar_id,
-                timeMin=time_min,
-                timeMax=time_max,
-                singleEvents=True,
-                orderBy='startTime'
-            ).execute()
-            return events_result.get('items', [])
-
-        # Display events in Streamlit
-        def display_events(events):
-            if not events:
-                st.write("No events found for this week.")
-            else:
-                for event in events:
-                    start_time = event['start'].get('dateTime', event['start'].get('date'))
-                    end_time = event['end'].get('dateTime', event['end'].get('date'))
-                    summary = event.get('summary', 'No title')
-                    st.write(f"**{summary}**")
-                    st.write(f"Start: {start_time}")
-                    st.write(f"End: {end_time}")
-                    st.write("---")
-
-
-        # Streamlit app
-        st.title("Studio Calendar for the Current Week")
-
-        events = fetch_week_events(calendar_id)
-        display_events(events)
-'''
-
 
 print('end')
         
