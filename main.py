@@ -85,12 +85,6 @@ def check_availability(calendar_id, start_time, end_time):
 
     return len(events) == 0
 
-"""
-date = input("choose date")
-ttime = input("choose time")
-dt = date+'T'+ttime+':00'
-print(dt)
-"""
 
 start_time_local = '2024-06-19T09:30:00'  # dt
 local_time_s = datetime.strptime(start_time_local, '%Y-%m-%dT%H:%M:%S')
@@ -132,7 +126,7 @@ if st.button('Check Availability'):
     end_datetime = datetime.combine(date, end_time)
     str_end_datetime = end_datetime.strftime('%Y-%m-%dT%H:%M:%S')
 
-    available = check_availability(calendar_id, str_start_datetime, str_end_datetime)
+    available = check_availability('dancemati@gmail.com', str_start_datetime, str_end_datetime)
 
     if available:
         st.success('The Studio is available.')
