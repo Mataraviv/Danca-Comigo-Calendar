@@ -110,15 +110,13 @@ else:
 
 
 ######################################################################################################
-
+print('streamlit')
 
 st.title('Studio Availability Checker')
 
 date = st.date_input('Date', today_date)
 start_time = st.time_input('Start Time', time(9, 0))
-start_time_utc = start_time.astimezone(pytz.utc)
 end_time = st.time_input('End Time', time(10, 0))
-end_time_utc = end_time.astimezone(pytz.utc)
 
 
 def fetch_events(calendar_id,start_time,end_time):
@@ -133,11 +131,13 @@ def fetch_events(calendar_id,start_time,end_time):
 
 
 if st.button('Check Availability'):
-    start_datetime = datetime.combine(date, start_time_utc)
-    str_start_datetime = start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    start_datetime = datetime.combine(date, start_time)
+    start_datetime_utc = start_datetime.astimezone(pytz.utc)
+    str_start_datetime = start_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
     print(str_start_datetime)
-    end_datetime = datetime.combine(date, end_time_utc)
-    str_end_datetime = end_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    end_datetime = datetime.combine(date, end_time)
+    end_datetime_utc = end_datetime.astimezone(pytz.utc)
+    str_end_datetime = end_datetime_utc.strftime('%Y-%m-%dT%H:%M:%S')
     print(str_end_datetime)
 
     events = fetch_events('dancemati@gmail.com', str_start_datetime, str_end_datetime)
