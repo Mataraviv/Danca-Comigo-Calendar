@@ -76,8 +76,8 @@ print(today_date)
 def check_availability(calendar_id, start_time, end_time):
     events_result = service.events().list(
         calendarId=calendar_id,
-        timeMin=start_time + 'Z',
-        timeMax=end_time + 'Z',
+        timeMin=start_time +'Z',
+        timeMax=end_time +'Z',
         singleEvents=True,
         orderBy='startTime'
     ).execute()
@@ -128,14 +128,16 @@ end_time = st.time_input('End Time', time(10, 0))
 
 if st.button('Check Availability'):
     start_datetime = datetime.combine(date, start_time)
+    str_start_datetime = start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_datetime = datetime.combine(date, end_time)
+    str_end_datetime = end_datetime.strftime('%Y-%m-%dT%H:%M:%S')
 
-    available = check_availability(calendar_id, start_datetime, end_datetime)
+    available = check_availability(calendar_id, str_start_datetime, str_end_datetime)
 
     if available:
-        st.success('The room is available.')
+        st.success('The Studio is available.')
     else:
-        st.error('The room is not available.')
+        st.error('The Studio is not available.')
 
 
 print('end')
