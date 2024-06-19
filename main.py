@@ -115,7 +115,7 @@ else:
 
 st.title('Studio Availability Checker')
 
-calendar_id = st.text_input(calendar_id)
+#calendar_id = st.text_input(calendar_id)
 date = st.date_input('Date', today_date)
 start_time = st.time_input('Start Time', time(9, 0))
 end_time = st.time_input('End Time', time(10, 0))
