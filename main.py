@@ -23,10 +23,8 @@ calendar_id = 'dancemati@gmail.com'  # or use your specific calendar ID
 
 ####################################################################################################
 
-def fetch_events():
+def fetch_events_now():
     now = datetime.utcnow().isoformat() + 'Z'
-
-
     events_result = service.events().list(
         calendarId=calendar_id,
         maxResults=10,
@@ -65,8 +63,9 @@ def print_events(events):
         summary = event['summary']
         print(f"Event {summary}: Start time UTC: {start_utc}, Start time local: {start_local}.\n End time UTC: {end_utc}, End time local: {end_local}.\n duration: {length}")
 
-events = fetch_events()
-print_events(events)
+
+events_now = fetch_events_now()
+print_events(events_now)
 
 ######################################################################################################
 today_date = date.today()
@@ -115,16 +114,32 @@ else:
 
 st.title('Studio Availability Checker')
 
-#calendar_id = st.text_input(calendar_id)
 date = st.date_input('Date', today_date)
 start_time = st.time_input('Start Time', time(9, 0))
 end_time = st.time_input('End Time', time(10, 0))
 
+
+def fetch_events(calendar_id,start_time,end_time):
+    events_result = service.events().list(
+        calendarId=calendar_id,
+        timeMin=start_time +'Z',
+        timeMax=end_time +'Z',
+        singleEvents=True,
+        orderBy='startTime').execute()
+
+    return events_result.get('items', [])
+
+
 if st.button('Check Availability'):
     start_datetime = datetime.combine(date, start_time)
     str_start_datetime = start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    print(str_start_datetime)
     end_datetime = datetime.combine(date, end_time)
     str_end_datetime = end_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    print(str_end_datetime)
+
+    events = fetch_events('dancemati@gmail.com', str_start_datetime, str_end_datetime)
+    print_events(events)
 
     available = check_availability('dancemati@gmail.com', str_start_datetime, str_end_datetime)
 
