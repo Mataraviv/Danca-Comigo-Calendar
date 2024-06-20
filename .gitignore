@@ -1,1 +1,12 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
 cerdentials.json
+.streamlit.secrets.toml
+.streamlit\secrets.toml
+
+=======
+cerdentials.json
+>>>>>>> parent of 4ebf73b (lm)
+=======
+cerdentials.json
+>>>>>>> parent of 4ebf73b (lm)
