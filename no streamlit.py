@@ -1,4 +1,15 @@
 
+SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+SERVICE_ACCOUNT_FILE = 'cerdentials.json'
+
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+service = build('calendar', 'v3', credentials=credentials)
+
+
+
 def fetch_events_now():
     now = datetime.utcnow().isoformat() + 'Z'
     events_result = service.events().list(
