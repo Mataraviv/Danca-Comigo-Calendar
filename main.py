@@ -129,7 +129,6 @@ if 'start_time' not in st.session_state:
 if 'end_time' not in st.session_state:
     st.session_state.end_time = ''
 
-
 def set_stage(stage):
     st.session_state.stage = stage
 
