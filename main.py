@@ -4,8 +4,23 @@ import pytz
 import streamlit as st
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+import json
 
 
+# Define the scope for Google Calendar API
+SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+# Retrieve the service account credentials from secrets
+service_account_info = st.secrets["google_calendar"]["service_account"]
+
+# Parse the JSON string from the TOML file
+credentials_info = json.loads(service_account_info)
+
+# Create credentials object using the parsed service account information
+credentials = service_account.Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
+
+# Build the Google Calendar API service
+service = build('calendar', 'v3', credentials=credentials)
 
 calendar_id = 'dancemati@gmail.com'
 
