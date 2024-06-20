@@ -134,17 +134,13 @@ def set_stage(stage):
     st.session_state.stage = stage
 
 
-logo_path = 'C:/Users/matar.aviv/Desktop/DS17/Danca-Comigo-Calendar/Current Logo.png'
+logo_path = './Current Logo.png'
 link = "http://www.danca-comigo.com/"
-cola, colb = st.columns(2)
-with cola:
-    st.image(logo_path, use_column_width=True)
-with colb:
-    st.logo(logo_path,link="http://www.danca-comigo.com/")
+A, B, C, D, E = st.columns(5)
+with B:
+    st.image(logo_path, width=400)
 
-
-st.title(':violet[_Studio Availability Checker_]')
-
+st.markdown("<h1 style='text-align: center; color: #c65dd4;'>Studio Availability Checker</h1>", unsafe_allow_html=True)
 
 if st.session_state.stage == 0:
     with st.form(key='Check Availability'):

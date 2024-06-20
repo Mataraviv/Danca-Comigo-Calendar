@@ -8,7 +8,21 @@ credentials = service_account.Credentials.from_service_account_file(
 
 service = build('calendar', 'v3', credentials=credentials)
 
+#################################################################################################
 
+logo_path = 'C:/Users/matar.aviv/Desktop/DS17/Danca-Comigo-Calendar/Current Logo.png'
+link = "http://www.danca-comigo.com/"
+cola, colb = st.columns(2)
+with cola:
+    st.image(logo_path, use_column_width=True)
+with colb:
+    st.logo(logo_path,link="http://www.danca-comigo.com/")
+
+
+st.title(':violet[_Studio Availability Checker_]')
+
+
+#################################################################################################
 
 def fetch_events_now():
     now = datetime.utcnow().isoformat() + 'Z'
