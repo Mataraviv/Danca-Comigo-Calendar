@@ -93,9 +93,9 @@ def check_availability(calendar_id, start_time, end_time):
     return len(events) == 0
 
 
-def book_studio(calendar_id, start_time, end_time, summary, description, user_email):
+def book_studio(calendar_id, start_time, end_time, summary, description, user_email, name):
     event = {
-        'summary': summary,
+        'summary': f'{name}, {summary}',
         'description': f'My email {user_email}\n\n {description}' ,
         'start': {
             'dateTime': start_time + 'Z',
@@ -231,6 +231,7 @@ if st.session_state.stage == 0:
 if st.session_state.stage == 1:
     st.write(f'Your Booking is from {st.session_state.start_time} till {st.session_state.end_time} on {st.session_state.date}')
     with st.form(key='booking_form'):
+        name = st.text_input('Enter your Full Name', value="")
         user_email = st.text_input('Enter your email', value="", placeholder='___@gmail.com')
         summary = st.text_input('Event Summary', placeholder='Enter your Booking Request')
         description = st.text_area('Event Description', placeholder='Enter your Event Description')
@@ -239,7 +240,7 @@ if st.session_state.stage == 1:
     if submit_button_2:
         event = book_studio(
             calendar_id, st.session_state.str_start_datetime, st.session_state.str_end_datetime,
-            summary, description, user_email)
+            summary, description, user_email, name)
         if event:
             st.write(f'Your booking request has been sent! from {st.session_state.start_time} till {st.session_state.end_time} on {st.session_state.date}')
             st.write(f'Booking link: {event["htmlLink"]}')
