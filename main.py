@@ -134,6 +134,7 @@ def set_stage(stage):
 
 
 logo_path = './Current Logo.png'
+pricing_path = './pricing.png'
 link = "http://www.danca-comigo.com/"
 A, B, C, D, E = st.columns(5)
 with B:
@@ -179,7 +180,7 @@ if st.session_state.stage == 0:
         if available:
             st.success('The Studio is available. :dancer:')
             with st.expander(":heavy_dollar_sign: See Pricing :heavy_dollar_sign:"):
-                st.write ('bla')#st.image('./pricing.png')
+                st.image(pricing_path)
             st.button('Proceed to Booking', on_click=set_stage, args=(1,))
 
         else:
