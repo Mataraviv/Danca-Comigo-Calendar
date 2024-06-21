@@ -115,6 +115,8 @@ def book_studio(calendar_id, start_time, end_time, summary, description, user_em
 ######################################################################################################
 print('streamlit')
 
+now = datetime.utcnow().isoformat() + 'Z'
+st.write(now)
 
 if 'stage' not in st.session_state:
     st.session_state.stage = 0
