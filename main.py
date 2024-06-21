@@ -231,8 +231,8 @@ if st.session_state.stage == 0:
 if st.session_state.stage == 1:
     st.write(f'Your Booking is from {st.session_state.start_time} till {st.session_state.end_time} on {st.session_state.date}')
     with st.form(key='booking_form'):
-        name = st.text_input('Enter your Full Name', value="")
-        user_email = st.text_input('Enter your email', value="", placeholder='___@gmail.com')
+        name = st.text_input('Full Name', value="")
+        user_email = st.text_input('Email', value="", placeholder='___@gmail.com')
         summary = st.text_input('Event Summary', placeholder='Enter your Booking Request')
         description = st.text_area('Event Description', placeholder='Enter your Event Description')
         submit_button_2 = st.form_submit_button(label='Book Studio')
