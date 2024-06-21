@@ -136,7 +136,7 @@ def set_stage(stage):
 
 
 logo_path = './Current Logo.png'
-pricing_path = './test.png'
+pricing_path = './pricing.PNG'
 link = "http://www.danca-comigo.com/"
 A, B, C, D, E = st.columns(5)
 with B:
