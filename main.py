@@ -204,9 +204,9 @@ if st.session_state.stage == 0:
                         start_datetime = datetime.fromisoformat(start_utc)
                         end_datetime = datetime.fromisoformat(end_utc)
                         summary = event.get('summary', 'No title')
+                        start_local = start_datetime.astimezone().isoformat()
+                        end_local = end_datetime.astimezone().isoformat()
                         if start_datetime.tzinfo is not None:
-                            start_local = start_datetime.astimezone().isoformat()
-                            end_local = end_datetime.astimezone().isoformat()
                             g = end_datetime - start_datetime
                             length = g.total_seconds() / 3600
                             st.write(f"**{summary}**")
