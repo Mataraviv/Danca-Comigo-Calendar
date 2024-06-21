@@ -179,7 +179,7 @@ if st.session_state.stage == 0:
         if available:
             st.success('The Studio is available. :dancer:')
             with st.expander(":heavy_dollar_sign: See Pricing :heavy_dollar_sign:"):
-                st.image('./pricing.png')
+                st.write ('bla')#st.image('./pricing.png')
             st.button('Proceed to Booking', on_click=set_stage, args=(1,))
 
         else:
