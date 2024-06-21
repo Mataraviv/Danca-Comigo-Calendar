@@ -107,7 +107,7 @@ def book_studio(calendar_id, start_time, end_time, summary, description, user_em
         },
         'guestsCanModify': False,
         'status': 'tentative',
-        'colorId':'1'
+        'colorId': '2'
     }
     event_result = service.events().insert(calendarId=calendar_id, body=event).execute()
     return event_result
