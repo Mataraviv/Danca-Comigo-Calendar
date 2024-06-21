@@ -145,15 +145,14 @@ with B:
 st.markdown("<h1 style='text-align: center; color: #c65dd4;'>Studio Availability Checker</h1>", unsafe_allow_html=True)
 
 if st.session_state.stage == 0:
-    st.write('Time is in UTC Time')
     with st.form(key='Check Availability'):
         st.session_state.date = st.date_input('Date', value=today_date, min_value=today_date, label_visibility='visible',format="DD/MM/YYYY").isoformat()
         col1, col2 = st.columns(2)
         with col1:
-            start_time_input = st.time_input('Start Time',time(8, 0),step=900,label_visibility='visible')
+            start_time_input = st.time_input('Start Time - UTC',time(8, 0),step=900,label_visibility='visible')
             st.session_state.start_time = start_time_input.isoformat()
         with col2:
-            end_time_input = st.time_input('End Time', time(9, 0),step=900,label_visibility='visible')
+            end_time_input = st.time_input('End Time - UTC', time(9, 0),step=900,label_visibility='visible')
             st.session_state.end_time = end_time_input.isoformat()
 
 
