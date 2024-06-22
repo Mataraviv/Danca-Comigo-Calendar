@@ -15,7 +15,7 @@ Welcome to the Studio Availability Checker! This Streamlit web application helps
 ### Installation
 
 1. Clone the repository to your local machine:
-   ```bash
+   ```
    git clone <https://github.com/Mataraviv/Danca-Comigo-Calendar>
 2. Install Python 3.11:
 
@@ -26,13 +26,13 @@ Welcome to the Studio Availability Checker! This Streamlit web application helps
     We recommend using Poetry for managing dependencies. If you don't have Poetry installed, you can install it using the instructions [here](https://python-poetry.org/docs/#installation).
     There is also a requirements.txt in the Repository
 
-    ```bash
+    ```
     poetry install
 ## Running the App
 
 ### Run the Streamlit app in your terminal:
 
-    ```bash
+   
     streamlit run main.py
 
 ### OR Run the Streamlit app in streamlit online using this [link](https://danca-comigo-calendar-akveqkdjv5kbhtms4dahxy.streamlit.app/)
