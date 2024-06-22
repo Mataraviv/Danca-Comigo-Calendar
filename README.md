@@ -10,7 +10,7 @@ Welcome to the Studio Availability Checker! This Streamlit web application helps
 - **Book Studio**: Book the studio by providing your email, booking request, and event description upon availability confirmation.
 - **Upcoming Events**: Displays upcoming events in the studio calendar if it's unavailable for the selected time.
 
-## How to Use
+## How to Use:
 
 ### Installation
 

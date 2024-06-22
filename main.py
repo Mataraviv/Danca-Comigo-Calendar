@@ -6,7 +6,6 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import json
 
-
 # Define the scope for Google Calendar API
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
