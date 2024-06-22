@@ -2,3 +2,5 @@ cerdentials.json
 .streamlit.secrets.toml
 .streamlit\secrets.toml
 secrets.toml
+.venv
+.env
